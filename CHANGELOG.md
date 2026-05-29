@@ -158,3 +158,150 @@ TV
     ├── TV Base Kiri (kaki)
     └── TV Base Kanan (kaki)
 ```
+
+---
+
+# Perubahan Tambahan — Tanaman Hias & Posisi TV
+
+## 1. Apa yang Diubah / Ditambahkan
+
+### 🌿 Objek Tanaman Hias (`void plant()`)
+
+Sebuah **tanaman hias** dalam pot telah ditambahkan di sebelah kanan TV. Tanaman ini terdiri dari beberapa bagian:
+
+| Bagian | Deskripsi | Warna |
+|---|---|---|
+| **Pot** | Wadah tanah berwarna cokelat | Cokelat |
+| **Pot Rim** | Bibir/tepi atas pot | Cokelat muda |
+| **Batang** | Tiang hijau kecil ke atas | Hijau tua |
+| **Daun Utama** | Bola hijau besar di puncak | Hijau cerah |
+| **Daun Kiri** | Bola hijau di sisi kiri | Hijau gelap |
+| **Daun Kanan** | Bola hijau di sisi kanan | Hijau gelap |
+| **Daun Depan** | Bola hijau kecil di depan | Hijau sedang |
+
+### 📍 Posisi Tanaman
+Tanaman diletakkan di sebelah kanan TV, kira-kira di koordinat:
+- X: `2.52` (sebelah kanan TV)
+- Y: `-0.5` s/d `0.65` (dari lantai ke atas)
+- Z: `6.0` (sejajar dengan TV)
+
+### 🖥️ Pergeseran Posisi TV
+Posisi TV digeser **1.5 unit ke kiri** pada sumbu X agar berada lebih di tengah ruangan:
+
+| Bagian | X Lama | X Baru |
+|---|---|---|
+| TV Stand | 2.0 | 0.5 |
+| TV Body | 2.0 | 0.5 (body), 0.7 (frame) |
+| TV Screen | 2.05 | 0.55 (disesuaikan) |
+| TV Neck | 2.25 | 0.75 (disesuaikan) |
+| TV Base Kiri | 2.05 | 0.55 (disesuaikan) |
+| TV Base Kanan | 2.43 | 0.93 (disesuaikan) |
+
+### 📞 Pemanggilan di `display()`
+Fungsi `plant()` dipanggil setelah `tv()`:
+```cpp
+tv();
+plant();
+```
+
+---
+
+## 2. Bagaimana Cara Membuat Tanaman Hias
+
+### Langkah 1 – Buat fungsi `plant()`
+
+Tambahkan fungsi baru sebelum `sphericalObject()`:
+
+```cpp
+void plant()
+{
+    // ... bagian-bagian tanaman
+}
+```
+
+### Langkah 2 – Buat Pot
+
+Pot dibuat dari kubus yang di-scale kecil menjadi bentuk kotak:
+
+```cpp
+// pot tanaman
+glPushMatrix();
+glTranslatef(2.4, -0.5, 6.0);
+glScalef(0.09, 0.1, 0.09);
+drawCube1(0.6, 0.3, 0.1, 0.3, 0.15, 0.05);
+glPopMatrix();
+
+// pot rim atas (bibir pot)
+glPushMatrix();
+glTranslatef(2.37, -0.2, 5.97);
+glScalef(0.1, 0.01, 0.1);
+drawCube1(0.5, 0.25, 0.08, 0.25, 0.12, 0.04);
+glPopMatrix();
+```
+
+### Langkah 3 – Buat Batang
+
+Batang dibuat dari kubus tipis tinggi:
+
+```cpp
+// batang tanaman
+glPushMatrix();
+glTranslatef(2.52, -0.2, 6.09);
+glScalef(0.01, 0.2, 0.01);
+drawCube1(0.13, 0.55, 0.13, 0.065, 0.275, 0.065);
+glPopMatrix();
+```
+
+### Langkah 4 – Buat Daun dengan `drawSphere`
+
+Daun dibuat dari beberapa **sphere hijau** dengan ukuran berbeda yang diposisikan di sekitar puncak batang:
+
+```cpp
+// daun utama (atas tengah)
+glPushMatrix();
+glTranslatef(2.52, 0.65, 6.09);
+glScalef(0.055, 0.055, 0.055);
+drawSphere(0.1, 0.65, 0.1, 0.05, 0.325, 0.05, 30);
+glPopMatrix();
+
+// daun kiri
+glPushMatrix();
+glTranslatef(2.38, 0.5, 6.09);
+glScalef(0.045, 0.045, 0.045);
+drawSphere(0.0, 0.55, 0.0, 0.0, 0.275, 0.0, 30);
+glPopMatrix();
+```
+
+> **Trik:** Gunakan beberapa `glutSolidSphere` (via `drawSphere`) dengan posisi sedikit berbeda untuk memberi kesan daun yang lebat dan natural.
+
+### Langkah 5 – Panggil di `display()`
+
+```cpp
+tv();
+plant();   // <-- tambahkan ini setelah tv()
+```
+
+---
+
+## 3. Ringkasan Konsep Tanaman Hias
+
+| Konsep | Penjelasan |
+|---|---|
+| `drawSphere(r,g,b,...)` | Fungsi helper sphere untuk membuat daun bulat |
+| `glScalef` kecil pada sphere | Mengecilkan sphere agar proporsional sebagai daun |
+| **Multiple sphere** | Beberapa sphere diposisikan berdekatan = kesan daun lebat |
+| `drawCube1` tipis tinggi | Untuk batang tanaman yang ramping |
+
+## 4. Struktur Komponen Tanaman Hias
+
+```
+Plant (Tanaman Hias)
+├── Pot (kubus cokelat)
+│   └── Pot Rim (bibir pot)
+├── Batang (kubus hijau tipis)
+└── Daun (4 sphere hijau)
+    ├── Daun Utama (atas)
+    ├── Daun Kiri
+    ├── Daun Kanan
+    └── Daun Depan
+```

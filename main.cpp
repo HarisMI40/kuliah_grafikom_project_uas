@@ -1247,6 +1247,60 @@ void tv()
     glPopMatrix();
 }
 
+void plant()
+{
+    //Tanaman Hias (di sebelah kanan TV) ************************************************************
+
+    //pot tanaman (di sebelah kanan TV, X setelah TV berakhir ~2.3)
+    glPushMatrix();
+    glTranslatef(2.6, -0.5, 4.55);
+    glScalef(0.09, 0.1, 0.09);
+    drawCube1(0.6, 0.3, 0.1, 0.3, 0.15, 0.05);
+    glPopMatrix();
+
+    //pot rim atas (bibir pot)
+    glPushMatrix();
+    glTranslatef(2.57, -0.2, 4.52);
+    glScalef(0.1, 0.01, 0.1);
+    drawCube1(0.5, 0.25, 0.08, 0.25, 0.12, 0.04);
+    glPopMatrix();
+
+    //batang tanaman
+    glPushMatrix();
+    glTranslatef(2.735, -0.2, 4.685);
+    glScalef(0.01, 0.2, 0.01);
+    drawCube1(0.13, 0.55, 0.13, 0.065, 0.275, 0.065);
+    glPopMatrix();
+
+    //daun utama (atas tengah)
+    glPushMatrix();
+    glTranslatef(2.735, 0.65, 4.685);
+    glScalef(0.055, 0.055, 0.055);
+    drawSphere(0.1, 0.65, 0.1, 0.05, 0.325, 0.05, 30);
+    glPopMatrix();
+
+    //daun kiri
+    glPushMatrix();
+    glTranslatef(2.595, 0.5, 4.685);
+    glScalef(0.045, 0.045, 0.045);
+    drawSphere(0.0, 0.55, 0.0, 0.0, 0.275, 0.0, 30);
+    glPopMatrix();
+
+    //daun kanan
+    glPushMatrix();
+    glTranslatef(2.875, 0.5, 4.685);
+    glScalef(0.045, 0.045, 0.045);
+    drawSphere(0.0, 0.55, 0.0, 0.0, 0.275, 0.0, 30);
+    glPopMatrix();
+
+    //daun depan
+    glPushMatrix();
+    glTranslatef(2.735, 0.48, 4.8);
+    glScalef(0.04, 0.04, 0.04);
+    drawSphere(0.05, 0.6, 0.05, 0.025, 0.3, 0.025, 30);
+    glPopMatrix();
+}
+
 void sphericalObject()
 {
     //table top part
@@ -1461,6 +1515,7 @@ void display(void)
     window();
     sphericalObject();
     tv();
+    plant();
     lightBulb1();
     lightBulb2();
     //lightBulb3();
