@@ -1200,6 +1200,53 @@ void window()
     glPopMatrix();
 }
 
+void tv()
+{
+    //TV ************************************************************
+
+    //tv stand / meja tv
+    glPushMatrix();
+    glTranslatef(0.5, -0.5, 4.55);
+    glScalef(0.6, 0.17, 0.13);
+    drawCube1(0.3, 0.15, 0.05, 0.15, 0.075, 0.025);
+    glPopMatrix();
+
+    //tv body (frame hitam)
+    glPushMatrix();
+    glTranslatef(0.7, 0.5, 4.58);
+    glScalef(0.6, 0.4, 0.0001);
+    drawCube1(0.05, 0.05, 0.05, 0.025, 0.025, 0.025);
+    glPopMatrix();
+
+    //tv screen (layar biru gelap)
+    glPushMatrix();
+    glTranslatef(0.75, 0.55, 4.585);
+    glScalef(0.55, 0.35, 0.0001);
+    drawCube1(0.05, 0.1, 0.2, 0.025, 0.05, 0.1, 80);
+    glPopMatrix();
+
+    //tv neck / leher penyangga
+    glPushMatrix();
+    glTranslatef(0.95, 0.0, 4.6);
+    glScalef(0.1, 0.17, 0.05);
+    drawCube1(0.1, 0.1, 0.1, 0.05, 0.05, 0.05);
+    glPopMatrix();
+
+    //tv base kiri
+    glPushMatrix();
+    glTranslatef(0.75, -0.52, 4.58);
+    glScalef(0.12, 0.02, 0.1);
+    drawCube1(0.1, 0.1, 0.1, 0.05, 0.05, 0.05);
+    glPopMatrix();
+
+    //tv base kanan
+    glPushMatrix();
+    glTranslatef(1.13, -0.52, 4.58);
+    glScalef(0.12, 0.02, 0.1);
+    drawCube1(0.1, 0.1, 0.1, 0.05, 0.05, 0.05);
+    glPopMatrix();
+}
+
 void sphericalObject()
 {
     //table top part
@@ -1413,6 +1460,7 @@ void display(void)
     Clock();
     window();
     sphericalObject();
+    tv();
     lightBulb1();
     lightBulb2();
     //lightBulb3();
