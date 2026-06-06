@@ -1484,6 +1484,93 @@ void lampLight()
     glPopMatrix();
 }
 
+void computerTable()
+{
+    // ================= MEJA =================
+
+    // alas meja
+    glPushMatrix();
+    glTranslatef(4.5, 0.2, 6.5);
+    glScalef(0.5, 0.03, 0.3);
+    drawCube1(0.36, 0.25, 0.20, 0.18, 0.12, 0.10);
+    glPopMatrix();
+
+    // kaki meja 1
+    glPushMatrix();
+    glTranslatef(4.5, -0.8, 6.5);
+    glScalef(0.03, 0.35, 0.03);
+    drawCube1(0.25, 0.15, 0.10, 0.12, 0.07, 0.05);
+    glPopMatrix();
+
+    // kaki meja 2
+    glPushMatrix();
+    glTranslatef(5.8, -0.8, 6.5);
+    glScalef(0.03, 0.35, 0.03);
+    drawCube1(0.25, 0.15, 0.10, 0.12, 0.07, 0.05);
+    glPopMatrix();
+
+    // kaki meja 3
+    glPushMatrix();
+    glTranslatef(4.5, -0.8, 7.3);
+    glScalef(0.03, 0.35, 0.03);
+    drawCube1(0.25, 0.15, 0.10, 0.12, 0.07, 0.05);
+    glPopMatrix();
+
+    // kaki meja 4
+    glPushMatrix();
+    glTranslatef(5.8, -0.8, 7.3);
+    glScalef(0.03, 0.35, 0.03);
+    drawCube1(0.25, 0.15, 0.10, 0.12, 0.07, 0.05);
+    glPopMatrix();
+
+    // ================= MONITOR =================
+
+    // monitor layar
+    glPushMatrix();
+    glTranslatef(4.9, 0.7, 6.7);
+    glScalef(0.22, 0.16, 0.02);
+    drawCube1(0.0, 0.0, 0.0, 0.02, 0.02, 0.02);
+    glPopMatrix();
+
+    // layar monitor menyala
+    glPushMatrix();
+    glTranslatef(2.95, 0.75, 1.76);
+    glScalef(0.18, 0.12, 0.001);
+    drawCube1(0.0, 0.7, 1.0, 0.0, 0.35, 0.5);
+    glPopMatrix();
+
+    // stand monitor
+    glPushMatrix();
+    glTranslatef(3.15, 0.25, 1.8);
+    glScalef(0.015, 0.12, 0.015);
+    drawCube1(0.2, 0.2, 0.2, 0.1, 0.1, 0.1);
+    glPopMatrix();
+
+    // alas monitor
+    glPushMatrix();
+    glTranslatef(3.0, 0.2, 1.7);
+    glScalef(0.12, 0.01, 0.08);
+    drawCube1(0.15, 0.15, 0.15, 0.07, 0.07, 0.07);
+    glPopMatrix();
+
+    // ================= KEYBOARD =================
+
+    glPushMatrix();
+    glTranslatef(4.9, 0.25, 7.0);
+    glScalef(0.18, 0.01, 0.06);
+    drawCube1(0.1, 0.1, 0.1, 0.05, 0.05, 0.05);
+    glPopMatrix();
+
+    // ================= CPU =================
+
+    glPushMatrix();
+    glTranslatef(5.7, 0.2, 6.5);
+    glScalef(0.08, 0.22, 0.12);
+    drawCube1(0.15, 0.15, 0.15, 0.08, 0.08, 0.08);
+    glPopMatrix();
+}
+
+
 
 
 void display(void)
@@ -1499,6 +1586,10 @@ void display(void)
     gluLookAt(eyeX, eyeY, eyeZ, refX, refY, refZ, 0, 1, 0); //7,2,15, 0,0,0, 0,1,0
 
     glEnable(GL_LIGHTING);
+
+    GLfloat globalAmbient[] = { 0.6, 0.6, 0.6, 1.0 };
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
+
     lightOne();
     lightTwo();
     lampLight();
@@ -1511,6 +1602,7 @@ void display(void)
     wardrobe();
     cupboard();
     dressingTable();
+    computerTable();
     Clock();
     window();
     sphericalObject();
