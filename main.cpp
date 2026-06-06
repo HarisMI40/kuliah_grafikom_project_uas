@@ -1617,6 +1617,26 @@ void display(void)
     glutSwapBuffers();
 }
 
+void mySpecialKeyFunc(int key, int x, int y)
+{
+    switch (key)
+    {
+    case GLUT_KEY_UP:    // maju ke depan (sumbu Z)
+        eyeZ -= 1.0;
+        break;
+    case GLUT_KEY_DOWN:  // mundur ke belakang (sumbu Z)
+        eyeZ += 1.0;
+        break;
+    case GLUT_KEY_LEFT:  // geser ke kiri (sumbu X)
+        eyeX -= 1.0;
+        break;
+    case GLUT_KEY_RIGHT: // geser ke kanan (sumbu X)
+        eyeX += 1.0;
+        break;
+    }
+    glutPostRedisplay();
+}
+
 void myKeyboardFunc(unsigned char key, int x, int y)
 {
     switch (key)
@@ -1864,6 +1884,7 @@ int main(int argc, char** argv)
     glutReshapeFunc(fullScreen);
     glutDisplayFunc(display);
     glutKeyboardFunc(myKeyboardFunc);
+    glutSpecialFunc(mySpecialKeyFunc);
     glutIdleFunc(animate);
     glutMainLoop();
 
