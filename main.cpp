@@ -1532,25 +1532,25 @@ void computerTable()
     drawCube1(0.0, 0.0, 0.0, 0.02, 0.02, 0.02);
     glPopMatrix();
 
+    // leher monitor (neck)
+    glPushMatrix();
+    glTranslatef(5.215, 0.29, 6.715);
+    glScalef(0.015, 0.137, 0.015);
+    drawCube1(0.2, 0.2, 0.2, 0.1, 0.1, 0.1);
+    glPopMatrix();
+
+    // alas leher monitor
+    glPushMatrix();
+    glTranslatef(5.1, 0.27, 6.62);
+    glScalef(0.08, 0.007, 0.075);
+    drawCube1(0.15, 0.15, 0.15, 0.07, 0.07, 0.07);
+    glPopMatrix();
+
     // layar monitor menyala
     glPushMatrix();
     glTranslatef(2.95, 0.75, 1.76);
     glScalef(0.18, 0.12, 0.001);
     drawCube1(0.0, 0.7, 1.0, 0.0, 0.35, 0.5);
-    glPopMatrix();
-
-    // stand monitor
-    glPushMatrix();
-    glTranslatef(3.15, 0.25, 1.8);
-    glScalef(0.015, 0.12, 0.015);
-    drawCube1(0.2, 0.2, 0.2, 0.1, 0.1, 0.1);
-    glPopMatrix();
-
-    // alas monitor
-    glPushMatrix();
-    glTranslatef(3.0, 0.2, 1.7);
-    glScalef(0.12, 0.01, 0.08);
-    drawCube1(0.15, 0.15, 0.15, 0.07, 0.07, 0.07);
     glPopMatrix();
 
     // ================= KEYBOARD =================
