@@ -12,41 +12,67 @@
 #include <stdio.h>
 #include <iostream>
 
+// === STATUS LAMPU & FLAG ANIMASI ===
+// redFlag    : menentukan arah ayunan bandul jam (true=maju / false=balik)
+// switchOne  : status on/off lampu langit-langit kanan (GL_LIGHT0)
+// switchTwo  : status on/off lampu langit-langit kiri  (GL_LIGHT1)
+// switchLamp : status on/off spotlight lampu meja       (GL_LIGHT2)
+// amb/diff/spec 1,2,3 : komponen ambient, diffuse, specular untuk tiap sumber cahaya
 GLboolean redFlag = true, switchOne = false, switchTwo = false, switchLamp = false, amb1 = true, diff1 = true, spec1 = true, amb2 = true, diff2 = true, spec2 = true, amb3 = true, diff3 = true, spec3 = true;
+
+// Dimensi jendela aplikasi dalam piksel
 double windowHeight = 800, windowWidth = 600;
+
+// === POSISI KAMERA (EYE POINT) DAN TITIK PANDANG (REFERENCE POINT) ===
+// eye (X,Y,Z) : koordinat posisi kamera/mata di ruang 3D
+// ref (X,Y,Z) : koordinat titik yang dilihat/dituju oleh kamera
 double eyeX = 7.0, eyeY = 2.0, eyeZ = 15.0, refX = 0, refY = 0, refZ = 0;
+
+// === VARIABEL ANIMASI BANDUL JAM DINDING ===
+// theta : sudut rotasi batang bandul (dalam derajat, berubah tiap frame)
+// y     : posisi Y bola bandul (tidak digunakan aktif, nilai cadangan)
+// z     : posisi Z bola bandul (bergerak seiring perubahan theta)
 double theta = 180.0, y = 1.36, z = 7.97888;
 
+// === TEMPLATE VERTEX KUBUS (ukuran 3x3x3 unit dalam koordinat lokal) ===
+// 8 titik sudut kubus yang menjadi dasar semua objek berbentuk kotak.
+// Posisi dan ukuran akhir objek ditentukan oleh glTranslatef() dan glScalef()
 static GLfloat v_cube[8][3] =
 {
-    {0.0, 0.0, 0.0}, //0
-    {0.0, 0.0, 3.0}, //1
-    {3.0, 0.0, 3.0}, //2
-    {3.0, 0.0, 0.0}, //3
-    {0.0, 3.0, 0.0}, //4
-    {0.0, 3.0, 3.0}, //5
-    {3.0, 3.0, 3.0}, //6
-    {3.0, 3.0, 0.0}  //7
+    {0.0, 0.0, 0.0}, //0 bawah-belakang-kiri
+    {0.0, 0.0, 3.0}, //1 bawah-depan-kiri
+    {3.0, 0.0, 3.0}, //2 bawah-depan-kanan
+    {3.0, 0.0, 0.0}, //3 bawah-belakang-kanan
+    {0.0, 3.0, 0.0}, //4 atas-belakang-kiri
+    {0.0, 3.0, 3.0}, //5 atas-depan-kiri
+    {3.0, 3.0, 3.0}, //6 atas-depan-kanan
+    {3.0, 3.0, 0.0}  //7 atas-belakang-kanan
 };
 
+// === INDEKS FACE KUBUS (6 sisi, masing-masing 4 vertex) ===
+// Setiap baris mendefinisikan urutan vertex untuk satu sisi kubus.
+// Urutan vertex menentukan arah normal (searah jarum jam = menghadap ke dalam)
 static GLubyte quadIndices[6][4] =
 {
-    {0, 1, 2, 3}, //bottom
-    {4, 5, 6, 7}, //top
-    {5, 1, 2, 6}, //front
-    {0, 4, 7, 3}, // back is clockwise
-    {2, 3, 7, 6}, //right
-    {1, 5, 4, 0}  //left is clockwise
+    {0, 1, 2, 3}, //bottom (bawah)
+    {4, 5, 6, 7}, //top    (atas)
+    {5, 1, 2, 6}, //front  (depan)
+    {0, 4, 7, 3}, //back   (belakang, searah jarum jam)
+    {2, 3, 7, 6}, //right  (kanan)
+    {1, 5, 4, 0}  //left   (kiri, searah jarum jam)
 };
 
 
 
+// Menghitung vektor normal dari 3 titik menggunakan perkalian silang (cross product).
+// Normal dibutuhkan OpenGL untuk menghitung efek pencahayaan (shading) pada permukaan.
+// Rumus: U = P2-P1, V = P3-P1, N = U x V
 static void getNormal3p
 (GLfloat x1, GLfloat y1, GLfloat z1, GLfloat x2, GLfloat y2, GLfloat z2, GLfloat x3, GLfloat y3, GLfloat z3)
 {
     GLfloat Ux, Uy, Uz, Vx, Vy, Vz, Nx, Ny, Nz;
 
-    Ux = x2 - x1;
+    Ux = x2 - x1; // Vektor U = P2 - P1
     Uy = y2 - y1;
     Uz = z2 - z1;
 
@@ -78,11 +104,16 @@ void drawCube()
     glEnd();
 }
 
+// Fungsi utama menggambar kubus dengan material OpenGL.
+// Parameter:
+//   difX,Y,Z  : warna diffuse (warna utama objek saat terkena cahaya langsung, nilai 0.0-1.0)
+//   ambX,Y,Z  : warna ambient (warna saat tidak terkena cahaya langsung, biasanya ~50% diffuse)
+//   shine     : tingkat kilap permukaan (nilai besar = lebih mengkilap, 0-128)
 void drawCube1(GLfloat difX, GLfloat difY, GLfloat difZ, GLfloat ambX = 0, GLfloat ambY = 0, GLfloat ambZ = 0, GLfloat shine = 50)
 {
-    GLfloat no_mat[] = { 0.0, 0.0, 0.0, 1.0 };
-    GLfloat mat_ambient[] = { ambX, ambY, ambZ, 1.0 };
-    GLfloat mat_diffuse[] = { difX, difY, difZ, 1.0 };
+    GLfloat no_mat[] = { 0.0, 0.0, 0.0, 1.0 };   // material hitam (untuk emisi saat mati)
+    GLfloat mat_ambient[] = { ambX, ambY, ambZ, 1.0 };  // warna ambient
+    GLfloat mat_diffuse[] = { difX, difY, difZ, 1.0 };  // warna diffuse (warna utama)
     GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
     GLfloat mat_shininess[] = { shine };
 
@@ -254,7 +285,6 @@ void polygon(GLfloat difX, GLfloat difY, GLfloat difZ, GLfloat ambX, GLfloat amb
     glVertex2f(1, 2.2);
     glVertex2f(0.8, 2);
     glVertex2f(0.2, 1);
-    //glVertex2f(0,0);
 
     glEnd();
 }
@@ -698,33 +728,6 @@ void dressingTable()
     drawCube1(0.545, 0.271, 0.075, 0.2725, 0.1355, 0.0375);
     glPopMatrix();
 
-    /*   //dressing table left body left stripe
-       glColor3f(0.2,0.1,0.1);
-       glPushMatrix();
-       glTranslatef(5.9,0,5.2);
-       //glRotatef(22, 0,0,1);
-       glScalef(0.01, 0.3, 0.0001);
-       drawCube();
-       glPopMatrix();
-
-       //dressing table left body right stripe
-       glColor3f(0.2,0.1,0.1);
-       glPushMatrix();
-       glTranslatef(6.5,0,5.2);
-       //glRotatef(22, 0,0,1);
-       glScalef(0.01, 0.2, 0.0001);
-       drawCube();
-       glPopMatrix();
-
-       //dressing table left body bottom stripe
-       glColor3f(0.2,0.1,0.1);
-       glPushMatrix();
-       glTranslatef(5.9,0,5.2);
-       //glRotatef(22, 0,0,1);
-       glScalef(0.2, 0.01, 0.0001);
-       drawCube();
-       glPopMatrix();  */
-
        //dressing table right body
     glPushMatrix();
     glTranslatef(7, 0, 4.6);
@@ -732,32 +735,6 @@ void dressingTable()
     drawCube1(0.545, 0.271, 0.075, 0.2725, 0.1355, 0.0375);
     glPopMatrix();
 
-    /*     //dressing table right body left stripe
-         glColor3f(0.2,0.1,0.1);
-         glPushMatrix();
-         glTranslatef(7,0,5.2);
-         //glRotatef(22, 0,0,1);
-         glScalef(0.01, 0.2, 0.0001);
-         drawCube();
-         glPopMatrix();
-
-         //dressing table right body right stripe
-         glColor3f(0.2,0.1,0.1);
-         glPushMatrix();
-         glTranslatef(7.6,0,5.2);
-         //glRotatef(22, 0,0,1);
-         glScalef(0.01, 0.3, 0.0001);
-         drawCube();
-         glPopMatrix();
-
-         //dressing table right body bottom stripe
-         glColor3f(0.2,0.1,0.1);
-         glPushMatrix();
-         glTranslatef(7,0,5.2);
-         //glRotatef(22, 0,0,1);
-         glScalef(0.2, 0.01, 0.0001);
-         drawCube();
-         glPopMatrix(); */
 
          //dressing table upper body
     glPushMatrix();
@@ -1081,32 +1058,6 @@ void Clock()
     drawCube1(0, 0, 0, 0, 0, 0);
     glPopMatrix();
 
-    /*   //clock body bottom strip
-       glColor3f(0.2,0.1,0.1); //0.2,0.1,0.1
-       glPushMatrix();
-       glTranslatef(-0.66,1.8,7.89);
-       //glRotatef(22, 0,0,1);
-       glScalef(0.001, 0.01, 0.1);
-       drawCube();
-       glPopMatrix();
-
-       //clock body right strip
-       glColor3f(0.0,0.0,0.0); //0.2,0.1,0.1
-       glPushMatrix();
-       glTranslatef(-0.66,1.8,7.89);
-       //glRotatef(22, 0,0,1);
-       glScalef(0.005, 0.25, 0.01);
-       drawCube();
-       glPopMatrix();
-
-       //clock body left strip
-       glColor3f(0.2,0.1,0.1); //0.2,0.1,0.1
-       glPushMatrix();
-       glTranslatef(-0.65,1.8,8.2);
-       //glRotatef(22, 0,0,1);
-       glScalef(0.0001, 0.25, 0.01);
-       drawCube();
-       glPopMatrix();  */
 
        //clock pendulum stick
     glColor3f(0.2, 0.1, 0.1); //0.2,0.1,0.1
@@ -1573,46 +1524,60 @@ void computerTable()
 
 
 
+// Fungsi utama rendering, dipanggil setiap frame oleh GLUT
 void display(void)
 {
+    // Bersihkan buffer warna dan buffer kedalaman (depth/z-buffer) setiap frame
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // === SETUP PROYEKSI (menentukan perspektif kamera) ===
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(60, 1, 1, 100);
+    gluPerspective(60, 1, 1, 100); // FOV=60 derajat, near=1, far=100
 
+    // === SETUP KAMERA (menentukan posisi dan arah pandang) ===
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gluLookAt(eyeX, eyeY, eyeZ, refX, refY, refZ, 0, 1, 0); //7,2,15, 0,0,0, 0,1,0
+    gluLookAt(eyeX, eyeY, eyeZ, refX, refY, refZ, 0, 1, 0); // posisi mata, titik pandang, arah atas
 
+    // Aktifkan sistem pencahayaan OpenGL
     glEnable(GL_LIGHTING);
 
+    // Cahaya ambient global (pencahayaan latar belakang merata ke seluruh scene)
     GLfloat globalAmbient[] = { 0.6, 0.6, 0.6, 1.0 };
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
 
-    lightOne();
-    lightTwo();
-    lampLight();
-    room();
-    bed();
-    bedsideDrawer();
-    lamp();
-    LinkinParkPoster();
-    wallshelf();
-    wardrobe();
-    cupboard();
-    dressingTable();
-    computerTable();
-    Clock();
-    window();
-    sphericalObject();
-    tv();
-    plant();
-    lightBulb1();
-    lightBulb2();
-    //lightBulb3();
+    // === PENGATURAN SUMBER CAHAYA ===
+    lightOne();   // Lampu langit-langit kanan  (GL_LIGHT0)
+    lightTwo();   // Lampu langit-langit kiri   (GL_LIGHT1)
+    lampLight();  // Spotlight lampu meja       (GL_LIGHT2)
+
+    // === GAMBAR SEMUA OBJEK DALAM SCENE ===
+    room();           // Lantai, dinding, langit-langit, karpet
+    bed();            // Tempat tidur, bantal, selimut
+    bedsideDrawer();  // Laci samping tempat tidur
+    lamp();           // Lampu meja (base, tiang, kap)
+    LinkinParkPoster(); // Poster di dinding kiri
+    wallshelf();      // Rak dinding beserta hiasan
+    wardrobe();       // Lemari pakaian (kiri)
+    cupboard();       // Lemari/almari (kanan)
+    dressingTable();  // Meja rias dengan cermin
+    computerTable();  // Meja komputer dengan monitor, keyboard, CPU
+    Clock();          // Jam dinding dengan bandul animasi
+    window();         // Jendela
+    sphericalObject(); // Meja bundar kecil
+    tv();             // Televisi dengan stand
+    plant();          // Tanaman hias di sebelah TV
+
+    // Bola lampu (visualisasi titik sumber cahaya)
+    lightBulb1();     // Bola lampu kanan
+    lightBulb2();     // Bola lampu kiri
+    //lightBulb3();   // Bola lampu meja (dinonaktifkan)
+
+    // Matikan pencahayaan setelah selesai menggambar
     glDisable(GL_LIGHTING);
 
+    // Kirim perintah render ke GPU dan tukar buffer (double buffering)
     glFlush();
     glutSwapBuffers();
 }
@@ -1748,12 +1713,16 @@ void myKeyboardFunc(unsigned char key, int x, int y)
 }
 
 
+// Fungsi animasi yang dipanggil terus-menerus oleh glutIdleFunc setiap frame
 void animate()
 {
+    // === FASE MAJU: bandul berayun ke depan (theta bertambah) ===
     if (redFlag == true)
     {
-        theta += 2;
-        z -= 0.02; //0.016667;
+        theta += 2;    // tambah sudut 2 derajat per frame
+        z -= 0.02;     // bola bandul bergerak maju (Z berkurang)
+
+        // Sesuaikan posisi Y bola agar mengikuti lintasan ayunan
         if (theta >= 196 && theta <= 210)
         {
             y = 1.44;
@@ -1771,16 +1740,19 @@ void animate()
             y = 1.42;
         }
 
+        // Saat mencapai sudut maksimum (210), balikkan arah ayunan
         if (theta == 210)
         {
             redFlag = false;
         }
     }
+    // === FASE MUNDUR: bandul berayun kembali (theta berkurang) ===
     else if (redFlag == false)
     {
-        theta -= 2;
-        z += 0.02;//0.016667;
+        theta -= 2;    // kurangi sudut 2 derajat per frame
+        z += 0.02;     // bola bandul bergerak mundur (Z bertambah)
 
+        // Sesuaikan posisi Y bola saat ayunan balik
         if (theta >= 196 && theta <= 210)
         {
             y = 1.44;
@@ -1798,12 +1770,14 @@ void animate()
             y = 1.42;
         }
 
+        // Saat mencapai sudut minimum (150), balikkan arah kembali ke maju
         if (theta == 150)
         {
             redFlag = true;
         }
     }
 
+    // Minta GLUT untuk menggambar ulang frame berikutnya
     glutPostRedisplay();
 
 }
@@ -1871,21 +1845,26 @@ int main(int argc, char** argv)
     std::cout << "      " << std::endl;
     std::cout << "      " << std::endl;
 
+    // Mode tampilan: double buffer (anti-flicker), warna RGB, depth buffer (z-buffer)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 
+    // Posisi dan ukuran jendela saat pertama kali dibuka
     glutInitWindowPosition(100, 100);
     glutInitWindowSize(windowHeight, windowWidth);
-    glutCreateWindow("1607063 Bedroom");
+    glutCreateWindow("1607063 Bedroom"); // Judul jendela
 
-    glShadeModel(GL_SMOOTH);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_NORMALIZE);
+    glShadeModel(GL_SMOOTH);   // Smooth shading: transisi warna halus antar vertex
+    glEnable(GL_DEPTH_TEST);   // Aktifkan depth test agar objek terdekat menutupi yang jauh
+    glEnable(GL_NORMALIZE);    // Normalisasi vektor normal otomatis (penting saat glScalef digunakan)
 
-    glutReshapeFunc(fullScreen);
-    glutDisplayFunc(display);
-    glutKeyboardFunc(myKeyboardFunc);
-    glutSpecialFunc(mySpecialKeyFunc);
-    glutIdleFunc(animate);
+    // === DAFTARKAN CALLBACK FUNCTIONS ===
+    glutReshapeFunc(fullScreen);       // Dipanggil saat jendela diubah ukurannya
+    glutDisplayFunc(display);          // Dipanggil saat perlu menggambar frame
+    glutKeyboardFunc(myKeyboardFunc);  // Dipanggil saat tombol karakter (a,w,s,d,...) ditekan
+    glutSpecialFunc(mySpecialKeyFunc); // Dipanggil saat tombol spesial (arrow keys) ditekan
+    glutIdleFunc(animate);             // Dipanggil saat tidak ada event (untuk animasi)
+
+    // Mulai loop utama GLUT (program berjalan di sini sampai keluar)
     glutMainLoop();
 
     return 0;
